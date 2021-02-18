@@ -1,24 +1,32 @@
-version: '3.1'
+version: "3.4"
 
 services:
-
-#> PostgreSQL
+    #> PostgresSQL
     db:
         image: postgres:12-alpine
         environment:
-            - POSTGRES_DB=app_db
-            - POSTGRES_USER=app_user
-            - POSTGRES_PASSWORD=changeme
+            - "POSTGRES_DB=${POSTGRES_DB}"
+            - "POSTGRES_USER=${POSTGRES_USER}"
+            - "POSTGRES_PASSWORD=${POSTGRES_PASSWORD}"
         restart: always
 
-#> Django
+    #> Redis
+    redis:
+        container_name: redis
+        hostname: redis
+        image: redis:alpine
+        ports:
+            - "6379:6379"
+        restart: on-failure
+
+    #> Django
     app:
         build:
             context: .
             dockerfile: Docker/Dockerfile
         environment:
             - "DJANGO_SECRET_KEY=changeme"
-            - "DATABASE_URL=postgres://app_user:changeme@db/app_db"
+            - "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}"
         links:
             - "db:db"
         ports:
@@ -26,5 +34,45 @@ services:
         depends_on:
             - "db"
 
+    #> Celery Worker
+    celery_worker:
+        command: sh -c "chmod +x /code/wait-for && /code/wait-for redis:6379 && /code/wait-for app:8000 -- /venv/bin/python -m 'celery' -A esite worker"
+        environment:
+            - "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}"
+        depends_on:
+            - "app"
+            - "db"
+            - "redis"
+        deploy:
+            replicas: 1
+            restart_policy:
+                condition: on-failure
+        hostname: celery_worker
+        image: app-image
+        restart: on-failure
+        working_dir: /code
+
+    #> Celery Beat
+    celery_beat:
+        command: sh -c "chmod +x /code/wait-for && /code/wait-for redis:6379 && /code/wait-for app:8000 -- /venv/bin/python -m 'celery' -A esite beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
+        environment:
+            - "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}"
+        container_name: celery_beat
+        depends_on:
+            - "app"
+            - "db"
+            - "redis"
+        hostname: celery_beat
+        image: app-image
+        restart: on-failure
+        working_dir: /code
+
+    flower:
+        image: mher/flower
+        environment:
+            - CELERY_BROKER_URL=redis://redis:6379/0
+            - FLOWER_PORT=8888
+        ports:
+            - 8888:8888
 # SPDX-License-Identifier: (EUPL-1.2)
 # Copyright © 2021 Nico Schett

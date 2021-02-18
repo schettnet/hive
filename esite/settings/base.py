@@ -10,6 +10,8 @@ https://docs.djangoproject.com/en/stable/ref/settings/
 
 import os
 
+from celery.schedules import crontab
+
 env = os.environ.copy()
 
 # > Root Paths
@@ -69,9 +71,12 @@ INSTALLED_APPS = [
     "graphene_django",
     "graphql_jwt.refresh_token.apps.RefreshTokenConfig",
     "channels",
+    "channels_redis",
     "wagtailfontawesome",
     "pattern_library",
     "esite.project_styleguide.apps.ProjectStyleguideConfig",
+    "django_celery_beat",
+    "django_celery_results",
 ]
 
 # > Middleware Definition
@@ -164,7 +169,11 @@ ASGI_APPLICATION = "bifrost.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
+        # "BACKEND": "channels.layers.InMemoryChannelLayer",
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("redis", 6379)],
+        },
     },
 }
 
@@ -306,6 +315,22 @@ SILENCED_SYSTEM_CHECKS = ["captcha.recaptcha_test_key_error"]
 # Set this to False to limit slugs to ASCII characters.
 # Ref:https://docs.wagtail.io/en/stable/advanced_topics/settings.html#unicode-page-slugs
 WAGTAIL_ALLOW_UNICODE_SLUGS = True
+
+# > Celery
+# Ref: https://github.com/celery/celery
+CELERY_BROKER_URL = "redis://redis:6379"
+result_backend = 'redis://redis/0'
+redis_host = "redis"
+redis_port = 6379
+redis_db = 0
+
+CELERY_BEAT_SCHEDULE = {
+    "queue_every_five_mins": {
+        "task": "esite.user.tasks.do_some_queries",
+        "schedule": crontab(minute=5),
+    },
+}
+
 
 # SPDX-License-Identifier: (EUPL-1.2)
 # Copyright © 2019-2020 Simon Prast
