@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "esite.images",
     "esite.navigation",
     "esite.search",
+    "esite.heimdall",
     # Our own pages
     "esite.colorfield",
     "esite.home",
@@ -161,6 +162,7 @@ BIFROST_APPS = {
     "user": "",
     "navigation": "",
     "utils": "",
+    "heimdall": "",
 }
 
 BIFROST_ADD_SEARCH_HIT = True
@@ -169,11 +171,7 @@ ASGI_APPLICATION = "bifrost.asgi.application"
 
 CHANNEL_LAYERS = {
     "default": {
-        # "BACKEND": "channels.layers.InMemoryChannelLayer",
-        "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("redis", 6379)],
-        },
+        "BACKEND": "channels.layers.InMemoryChannelLayer",
     },
 }
 
