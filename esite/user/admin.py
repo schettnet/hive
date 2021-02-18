@@ -1,14 +1,13 @@
-from django.contrib.auth import get_user_model
-from wagtail.contrib.modeladmin.options import (
-    ModelAdmin,
-    ModelAdminGroup,
-    modeladmin_register,
-)
+from wagtail.contrib.modeladmin.options import ModelAdmin, modeladmin_register
+
+from esite.user.models import SNEKCustomer
+
+from .models import SNEKCustomer
 
 
 class UserAdmin(ModelAdmin):
-    model = get_user_model()
-    menu_label = "User"
+    model = SNEKCustomer
+    menu_label = "Users"
     menu_icon = "user"
     menu_order = 290
     add_to_settings_menu = False
@@ -19,16 +18,4 @@ class UserAdmin(ModelAdmin):
     search_fields = ("date_joined", "username", "email")
 
 
-class UserManagementAdmin(ModelAdminGroup):
-    menu_label = "User Management"
-    menu_icon = "group"
-    menu_order = 110
-    add_to_settings_menu = False
-    exclude_from_explorer = False
-    items = (UserAdmin,)
-
-
-modeladmin_register(UserManagementAdmin)
-
-# SPDX-License-Identifier: (EUPL-1.2)
-# Copyright © 2019-2020 Simon Prast
+modeladmin_register(UserAdmin)
