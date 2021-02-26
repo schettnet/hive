@@ -1,6 +1,9 @@
 import uuid
 from datetime import timedelta
 
+from django.conf import settings
+from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.db import models
 from django.utils import timezone
 from modelcluster.fields import ParentalKey
@@ -33,7 +36,31 @@ class License(models.Model):
     def validate(cls, license_key: str):
         license = cls.objects.filter(key=license_key).first()
 
-        if license and license.is_active and license.license_end > timezone.now():
+        if (
+            license
+            and license.is_active
+            and license.license_expire_date > timezone.now()
+        ):
             return True
 
         return False
+
+
+class AsyncHeimdallGeneration(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    introspection = models.JSONField()
+    bridge_drop_binary_name = models.CharField(max_length=255, null=True)
+    bridge_drop_binary = models.BinaryField(null=True)
+    bridge_drop_binary_saved = models.BooleanField(default=False)
+
+    def save_bridge_drop(self):
+        if not self.bridge_drop_binary_saved:
+            content = ContentFile(self.bridge_drop_binary)
+            self.bridge_drop_binary_name = default_storage.save(
+                self.bridge_drop_binary_name, content
+            )
+
+            self.bridge_drop_binary_saved = True
+            self.save()
+
+        return settings.BASE_URL + default_storage.url(self.bridge_drop_binary_name)

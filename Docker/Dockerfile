@@ -54,6 +54,10 @@ RUN set -ex \
     procps \
     zlib1g \
     tini \
+    nodejs \
+    npm \
+    netcat \
+    git \
     " \
     && seq 1 8 | xargs -I{} mkdir -p /usr/share/man/man{} \
     && apt-get update && apt-get install -y --no-install-recommends $RUN_DEPS \
@@ -66,6 +70,8 @@ EXPOSE 8000
 VOLUME /code/media
 
 ADD . /code/
+
+RUN npm set unsafe-perm true
 
 # Place init, make it executable and
 # make sure venv files can be used by asgi process:

@@ -13,10 +13,7 @@ class LicenseAdmin(ModelAdmin):
 
     # Listed in the user overview
     list_display = ("key", "owner", "is_active")
-    search_fields = (
-        "owner",
-        "is_active",
-    )
+    search_fields = ("owner", "is_active")
 
 
 modeladmin_register(LicenseAdmin)
