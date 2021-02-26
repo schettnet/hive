@@ -42,4 +42,4 @@ BASE_URL = "http://localhost:8000"
 CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
 
 # SPDX-License-Identifier: (EUPL-1.2)
-# Copyright © 2019-2020 Simon Prast
+# Copyright © 2019-2021 Nico Schett

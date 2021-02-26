@@ -106,9 +106,9 @@ directory containing the virtual environment):
 
 | Platform | Shell      | Command to activate virtual environment |
 | :------- | :--------- | :-------------------------------------- |
-| Posix    | bash/zsh   | \$ source <venv>/bin/activate      |
-|          | fish       | \$ . <venv>/bin/activate.fish      |
-|          | csh/tcsh   | \$ source <venv>/bin/activate.csh  |
+| Posix    | bash/zsh   | \$ source <venv>/bin/activate           |
+|          | fish       | \$ . <venv>/bin/activate.fish           |
+|          | csh/tcsh   | \$ source <venv>/bin/activate.csh       |
 | Windows  | cmd.exe    | C:> <venv>\\Scripts\\activate.bat       |
 |          | PowerShell | PS C:> <venv>\\Scripts\\Activate.ps1    |
 
@@ -176,4 +176,4 @@ to [contribute to our project](#contributing).
 ![GitHub repository license](https://img.shields.io/badge/license-EUPL--1.2-blue)
 
 SPDX-License-Identifier: (EUPL-1.2)
-Copyright © 2019-2020 Simon Prast
+Copyright © 2019-2021 Nico Schett
