@@ -9,8 +9,7 @@ https://docs.djangoproject.com/en/stable/ref/settings/
 """
 
 import os
-
-from celery.schedules import crontab
+from datetime import timedelta
 
 env = os.environ.copy()
 

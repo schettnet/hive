@@ -287,10 +287,8 @@ if "RECAPTCHA_PUBLIC_KEY" in env and "RECAPTCHA_PRIVATE_KEY" in env:
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("redis", 6379)],
-        },
-    },
+        "CONFIG": {"hosts": [("redis", 6379)]},
+    }
 }
 
 # SPDX-License-Identifier: (EUPL-1.2)
