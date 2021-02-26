@@ -21,12 +21,14 @@ services:
 
     #> Django
     app:
+        image: dropper-app
         build:
             context: .
             dockerfile: Docker/Dockerfile
         environment:
             - "DJANGO_SECRET_KEY=changeme"
             - "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}"
+            - "PRIMARY_HOST=${PRIMARY_HOST}"
         links:
             - "db:db"
         ports:
@@ -39,6 +41,8 @@ services:
         command: sh -c "chmod +x /code/wait-for && /code/wait-for redis:6379 && /code/wait-for app:8000 -- /venv/bin/python -m 'celery' -A esite worker"
         environment:
             - "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}"
+            - "GITHUB_HEIMDALL_ACCESS_TOKEN=${GITHUB_HEIMDALL_ACCESS_TOKEN}"
+            - "PRIMARY_HOST=${PRIMARY_HOST}"
         depends_on:
             - "app"
             - "db"
@@ -48,7 +52,7 @@ services:
             restart_policy:
                 condition: on-failure
         hostname: celery_worker
-        image: app-image
+        image: dropper-app
         restart: on-failure
         working_dir: /code
 
@@ -57,13 +61,15 @@ services:
         command: sh -c "chmod +x /code/wait-for && /code/wait-for redis:6379 && /code/wait-for app:8000 -- /venv/bin/python -m 'celery' -A esite beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler"
         environment:
             - "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/${POSTGRES_DB}"
+            - "GITHUB_HEIMDALL_ACCESS_TOKEN=${GITHUB_HEIMDALL_ACCESS_TOKEN}"
+            - "PRIMARY_HOST=${PRIMARY_HOST}"
         container_name: celery_beat
         depends_on:
             - "app"
             - "db"
             - "redis"
         hostname: celery_beat
-        image: app-image
+        image: dropper-app
         restart: on-failure
         working_dir: /code
 
