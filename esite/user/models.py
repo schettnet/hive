@@ -43,12 +43,7 @@ class SNEKUser(AbstractUser, ClusterableModel):
             ],
             "Details",
         ),
-        MultiFieldPanel(
-            [
-                FieldPanel("is_active"),
-            ],
-            "Settings",
-        ),
+        MultiFieldPanel([FieldPanel("is_active")], "Settings"),
     ]
 
     graphql_fields = [
@@ -72,6 +67,7 @@ class SNEKUser(AbstractUser, ClusterableModel):
     def __str__(self):
         return f"{self.username}"
 
+
 class SNEKCustomerManager(UserManager):
     def get_queryset(self):
         return super().get_queryset().exclude(groups__name="system")
@@ -82,6 +78,7 @@ class SNEKCustomer(SNEKUser):
         proxy = True
 
     objects = SNEKCustomerManager()
+
 
 # SPDX-License-Identifier: (EUPL-1.2)
 # Copyright © 2021 Nico Schett
