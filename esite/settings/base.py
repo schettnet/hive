@@ -317,18 +317,20 @@ WAGTAIL_ALLOW_UNICODE_SLUGS = True
 # > Celery
 # Ref: https://github.com/celery/celery
 CELERY_BROKER_URL = "redis://redis:6379"
-result_backend = 'redis://redis/0'
-redis_host = "redis"
-redis_port = 6379
-redis_db = 0
+CELERY_RESULT_BACKEND = "redis"
+CELERY_REDIS_HOST = "redis"
+CELERY_REDIS_PORT = 6379
+CELERY_REDIS_DB = 0
 
-CELERY_BEAT_SCHEDULE = {
-    "queue_every_five_mins": {
-        "task": "esite.user.tasks.do_some_queries",
-        "schedule": crontab(minute=5),
-    },
+# Try 5 times. Initially try again immediately, then add 0.5 seconds for each
+# subsequent try (with a maximum of 3 seconds). This comes out to roughly 3
+# seconds of total delay (0, 0.5, 1, 1.5).
+CELERY_BROKER_TRANSPORT_OPTIONS = {
+    "max_retries": 4,
+    "interval_start": 0,
+    "interval_step": 0.5,
+    "interval_max": 3,
 }
-
 
 # SPDX-License-Identifier: (EUPL-1.2)
 # Copyright © 2019-2020 Simon Prast
