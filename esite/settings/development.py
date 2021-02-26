@@ -38,5 +38,8 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 # See https://docs.wagtail.io/en/v0.8.10/howto/settings.html
 BASE_URL = "http://localhost:8000"
 
+# > Channels
+CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+
 # SPDX-License-Identifier: (EUPL-1.2)
 # Copyright © 2019-2020 Simon Prast

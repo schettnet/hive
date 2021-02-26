@@ -169,12 +169,6 @@ BIFROST_ADD_SEARCH_HIT = True
 
 ASGI_APPLICATION = "bifrost.asgi.application"
 
-CHANNEL_LAYERS = {
-    "default": {
-        "BACKEND": "channels.layers.InMemoryChannelLayer",
-    },
-}
-
 # > Password Validation
 # The list of validators that are used to check the strength of passwords, see
 # https://docs.djangoproject.com/en/stable/ref/settings/#auth-password-validators
