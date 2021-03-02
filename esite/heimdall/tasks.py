@@ -3,6 +3,7 @@ import subprocess
 from os import getenv, path
 
 import git
+from celery import Task
 from celery.utils.log import get_task_logger
 
 from esite.celery_app import app as celery_app
@@ -14,8 +15,31 @@ class UnconfiguredEnvironment(Exception):
     """base class for new exception"""
 
 
-@celery_app.task(bind=True)
-def generate_bridge_drop_task(self, async_gen_id):
+class CallbackTask(Task):
+    def on_success(self, retval, task_id, args, kwargs):
+        state = "SUCCESS"
+        license_key = kwargs.get("license_key")
+
+        self.publish(task_id, state, license_key)
+
+    def on_failure(self, exc, task_id, args, kwargs, einfo):
+        state = "FAILURE"
+        license_key = kwargs.get("license_key")
+
+        self.publish(task_id, state, license_key)
+
+    def publish(self, task_id, state, license_key):
+        from .schema import OnNewHeimdallGeneration
+
+        OnNewHeimdallGeneration.new_heimdall_generation(
+            license_key=license_key,
+            state=state,
+            task_id=task_id,
+        )
+
+
+@celery_app.task(base=CallbackTask, bind=True)
+def generate_bridge_drop_task(self, async_gen_id, license_key):
     from .models import AsyncHeimdallGeneration
 
     logger.info("Generated bridge drop with heimdall")

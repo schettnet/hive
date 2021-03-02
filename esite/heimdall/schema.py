@@ -1,3 +1,4 @@
+import channels_graphql_ws
 import graphene
 from celery.result import AsyncResult
 from graphql import GraphQLError
@@ -5,11 +6,11 @@ from graphql_jwt.decorators import login_required
 
 from .models import AsyncHeimdallGeneration, License
 from .tasks import generate_bridge_drop_task
-from .types import GenerationStatus
+from .types import GenerationTypes
 
 
-class RequestBridgeDrop(graphene.Mutation):
-    taskId = graphene.String()
+class HeimdallGeneration(graphene.Mutation):
+    task_id = graphene.String()
 
     class Arguments:
         introspection_data = graphene.JSONString(required=True)
@@ -17,11 +18,7 @@ class RequestBridgeDrop(graphene.Mutation):
 
     @login_required
     def mutate(self, info, introspection_data, license_key):
-        info.context.user
-
-        validity_check = License.validate(license_key=license_key)
-
-        if not validity_check:
+        if not License.validate(license_key=license_key):
             raise GraphQLError(
                 "This license is invalid. This could be due to expiration or has already been used."
             )
@@ -30,34 +27,93 @@ class RequestBridgeDrop(graphene.Mutation):
             introspection=introspection_data
         )
 
-        task = generate_bridge_drop_task.delay(async_gen.id)
+        task = generate_bridge_drop_task.delay(async_gen.id, license_key=license_key)
+        task_id = task.id
+        task_state = task.state
 
         # Deactivate licence
         license = License.objects.get(key=license_key)
-        license.is_active = False
+        # license.is_active = False
         license.save()
 
-        return RequestBridgeDrop(taskId=task.id)
+        OnNewHeimdallGeneration.new_heimdall_generation(
+            license_key=license_key, state=task_state, task_id=task_id, url=None
+        )
+
+        return HeimdallGeneration(task_id=task_id)
 
 
 class Mutation(graphene.ObjectType):
-    request_bridge_drop = RequestBridgeDrop.Field()
+    heimdall_generation = HeimdallGeneration.Field()
 
 
-class Query(graphene.ObjectType):
-    get_bridge_drop = graphene.Field(
-        GenerationStatus, task_id=graphene.ID(required=True)
-    )
+class OnNewHeimdallGeneration(channels_graphql_ws.Subscription):
+    """Simple GraphQL subscription."""
 
-    @login_required
-    def resolve_get_bridge_drop(root, info, task_id):
+    # Subscription payload.
+    state = GenerationTypes.State(required=True)
+    task_id = graphene.ID(required=True)
+    url = graphene.String()
+
+    class Arguments:
+        """That is how subscription arguments are defined."""
+
+        license_key = graphene.ID(required=True)
+
+    @staticmethod
+    def subscribe(root, info, license_key):
+        """Called when user subscribes."""
+
+        if not License.validate(license_key):
+            raise GraphQLError(
+                "This license is invalid. This could be due to expiration or has already been used."
+            )
+
+        # Return the list of subscription group names.
+        return [license_key]
+
+    @staticmethod
+    def publish(payload, info, license_key):
+        """Called to notify the client."""
+
+        # Here `payload` contains the `payload` from the `broadcast()`
+        # invocation (see below). You can return `MySubscription.SKIP`
+        # if you wish to suppress the notification to a particular
+        # client. For example, this allows to avoid notifications for
+        # the actions made by this particular client.
+
+        assert License.validate(license_key)
+
+        state = payload["state"]
+        task_id = payload["task_id"]
+        url = payload["url"]
+
         task = AsyncResult(task_id)
-        file_url = None
 
         if task.ready():
-            async_gen_id = task.get()
-            async_gen = AsyncHeimdallGeneration.objects.get(id=async_gen_id)
+            async_gen = AsyncHeimdallGeneration.objects.get(id=task.get())
+            url = async_gen.save_bridge_drop()
 
-            file_url = async_gen.save_bridge_drop()
+        return OnNewHeimdallGeneration(
+            state=GenerationTypes.State.get(state), task_id=task_id, url=url
+        )
 
-        return {"status": GenerationStatus.Status.get(task.state), "url": file_url}
+    @classmethod
+    def new_heimdall_generation(cls, license_key, state, task_id, url=None):
+        """Auxiliary function to send subscription notifications.
+        It is generally a good idea to encapsulate broadcast invocation
+        inside auxiliary class methods inside the subscription class.
+        That allows to consider a structure of the `payload` as an
+        implementation details.
+        """
+
+        cls.broadcast(
+            group=license_key,
+            payload={"state": state, "task_id": task_id, "url": url},
+        )
+
+
+class Subscription(graphene.ObjectType):
+    """Root GraphQL subscription."""
+
+    on_new_heimdall_generation = OnNewHeimdallGeneration.Field()
