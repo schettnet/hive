@@ -39,7 +39,12 @@ EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 BASE_URL = "http://localhost:8000"
 
 # > Channels
-CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}}
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {"hosts": [("localhost", 6379)]},
+    }
+}
 
 # SPDX-License-Identifier: (EUPL-1.2)
 # Copyright © 2019-2021 Nico Schett
