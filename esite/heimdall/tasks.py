@@ -32,9 +32,7 @@ class CallbackTask(Task):
         from .schema import OnNewHeimdallGeneration
 
         OnNewHeimdallGeneration.new_heimdall_generation(
-            license_key=license_key,
-            state=state,
-            task_id=task_id,
+            license_key=license_key, state=state, task_id=task_id
         )
 
 

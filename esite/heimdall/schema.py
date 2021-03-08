@@ -108,8 +108,7 @@ class OnNewHeimdallGeneration(channels_graphql_ws.Subscription):
         """
 
         cls.broadcast(
-            group=license_key,
-            payload={"state": state, "task_id": task_id, "url": url},
+            group=license_key, payload={"state": state, "task_id": task_id, "url": url}
         )
 
 
