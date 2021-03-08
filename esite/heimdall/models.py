@@ -1,9 +1,8 @@
 import uuid
 from datetime import timedelta
 
-from django.conf import settings
+from bifrost.models import BifrostFile
 from django.core.files.base import ContentFile
-from django.core.files.storage import default_storage
 from django.db import models
 from django.utils import timezone
 from modelcluster.fields import ParentalKey
@@ -55,12 +54,13 @@ class AsyncHeimdallGeneration(models.Model):
 
     def save_bridge_drop(self):
         if not self.bridge_drop_binary_saved:
-            content = ContentFile(self.bridge_drop_binary)
-            self.bridge_drop_binary_name = default_storage.save(
-                self.bridge_drop_binary_name, content
+            private_file = BifrostFile()
+            private_file.file.save(
+                self.bridge_drop_binary_name, ContentFile(self.bridge_drop_binary)
             )
 
+            self.bridge_drop_binary_name = private_file.file
             self.bridge_drop_binary_saved = True
             self.save()
 
-        return settings.BASE_URL + default_storage.url(self.bridge_drop_binary_name)
+        return private_file.get_download_url()
