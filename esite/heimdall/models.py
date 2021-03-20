@@ -63,4 +63,4 @@ class AsyncHeimdallGeneration(models.Model):
             self.bridge_drop_binary_saved = True
             self.save()
 
-        return private_file.get_download_url()
+        return private_file

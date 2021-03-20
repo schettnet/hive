@@ -53,7 +53,9 @@ class OnNewHeimdallGeneration(channels_graphql_ws.Subscription):
     # Subscription payload.
     state = GenerationTypes.State(required=True)
     task_id = graphene.ID(required=True)
+    access_token = graphene.String()
     url = graphene.String()
+    secure_url = graphene.String()
 
     class Arguments:
         """That is how subscription arguments are defined."""
@@ -86,20 +88,31 @@ class OnNewHeimdallGeneration(channels_graphql_ws.Subscription):
 
         state = payload["state"]
         task_id = payload["task_id"]
+        access_token = payload["access_token"]
+        secure_url = payload["secure_url"]
         url = payload["url"]
 
         task = AsyncResult(task_id)
 
         if task.ready():
             async_gen = AsyncHeimdallGeneration.objects.get(id=task.get())
-            url = async_gen.save_bridge_drop()
+            file = async_gen.save_bridge_drop()
+            access_token = file.access_token
+            secure_url = file.secure_url
+            url = file.url
 
         return OnNewHeimdallGeneration(
-            state=GenerationTypes.State.get(state), task_id=task_id, url=url
+            state=GenerationTypes.State.get(state),
+            task_id=task_id,
+            access_token=access_token,
+            secure_url=secure_url,
+            url=url,
         )
 
     @classmethod
-    def new_heimdall_generation(cls, license_key, state, task_id, url=None):
+    def new_heimdall_generation(
+        cls, license_key, state, task_id, access_token=None, secure_url=None, url=None
+    ):
         """Auxiliary function to send subscription notifications.
         It is generally a good idea to encapsulate broadcast invocation
         inside auxiliary class methods inside the subscription class.
@@ -108,7 +121,14 @@ class OnNewHeimdallGeneration(channels_graphql_ws.Subscription):
         """
 
         cls.broadcast(
-            group=license_key, payload={"state": state, "task_id": task_id, "url": url}
+            group=license_key,
+            payload={
+                "state": state,
+                "task_id": task_id,
+                "access_token": access_token,
+                "secure_url": secure_url,
+                "url": url,
+            },
         )
 
 

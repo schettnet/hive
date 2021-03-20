@@ -333,5 +333,10 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
     "interval_max": 3,
 }
 
+#> Bifrost settings
+BIFROST_FILES = True
+# Private file storage
+PRIVATE_STORAGE_ROOT = "private_media/"
+
 # SPDX-License-Identifier: (EUPL-1.2)
 # Copyright © 2019-2021 Nico Schett

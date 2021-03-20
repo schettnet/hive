@@ -7,6 +7,7 @@ from celery import Task
 from celery.utils.log import get_task_logger
 
 from esite.celery_app import app as celery_app
+from .models import AsyncHeimdallGeneration
 
 logger = get_task_logger(__name__)
 
@@ -20,26 +21,35 @@ class CallbackTask(Task):
         state = "SUCCESS"
         license_key = kwargs.get("license_key")
 
-        self.publish(task_id, state, license_key)
+        self.publish(
+            task_id,
+            state,
+            license_key,
+        )
 
     def on_failure(self, exc, task_id, args, kwargs, einfo):
         state = "FAILURE"
         license_key = kwargs.get("license_key")
-
+        print(exc)
         self.publish(task_id, state, license_key)
 
-    def publish(self, task_id, state, license_key):
+    def publish(
+        self, task_id, state, license_key, access_token=None, secure_url=None, url=None
+    ):
         from .schema import OnNewHeimdallGeneration
 
         OnNewHeimdallGeneration.new_heimdall_generation(
-            license_key=license_key, state=state, task_id=task_id
+            license_key=license_key,
+            state=state,
+            task_id=task_id,
+            access_token=access_token,
+            secure_url=secure_url,
+            url=url,
         )
 
 
 @celery_app.task(base=CallbackTask, bind=True)
-def generate_bridge_drop_task(self, async_gen_id, license_key):
-    from .models import AsyncHeimdallGeneration
-
+def generate_bridge_drop_task(self, async_gen_id, license_key=None):
     logger.info("Generated bridge drop with heimdall")
 
     access_token = getenv("GITHUB_HEIMDALL_ACCESS_TOKEN")
