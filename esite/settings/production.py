@@ -34,7 +34,7 @@ DEBUG_PROPAGATE_EXCEPTIONS = env.get("DJANGO_DEBUG_PROPAGATE_EXCEPTIONS", "off")
 # This is used by Wagtail's email notifications for constructing absolute
 # URLs. Please set to the domain that users will access the admin site.
 if "PRIMARY_HOST" in env:
-    BASE_URL = "https://{}".format(env["PRIMARY_HOST"])
+    BASE_URL = "http://{}".format(env["PRIMARY_HOST"])
 
 # > Secret Key
 # SECURITY WARNING: keep the secret key used in production secret!
