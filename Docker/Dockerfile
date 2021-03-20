@@ -7,6 +7,9 @@ LABEL maintainer="contact@snek.at"
 ENV DJANGO_DEBUG=on \
     DJANGO_SETTINGS_MODULE=esite.settings.production
 
+# Fix: apt-key output should not be parsed
+ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=1
+
 # The ASGI configuration (customize as needed):
 ENV ASGI_VIRTUALENV=/venv \
     ASGI_CONFIG=bifrost.asgi:application \
@@ -20,6 +23,7 @@ WORKDIR /code/
 # Add pre-installation requirements:
 ADD requirements/ /requirements/
 
+
 # Update, install and cleaning:
 RUN set -ex \
     && BUILD_DEPS=" \
@@ -32,8 +36,13 @@ RUN set -ex \
     zlib1g-dev \
     libffi-dev \
     tini \
+    gnupg \
+    curl \
     " \
     && apt-get update && apt-get install -y --no-install-recommends $BUILD_DEPS \
+    && curl -s https://deb.nodesource.com/gpgkey/nodesource.gpg.key | apt-key add - \
+    && sh -c "echo deb https://deb.nodesource.com/node_14.x groovy main \ 
+    > /etc/apt/sources.list.d/nodesource.list" \
     && python3 -m venv /venv \
     && /venv/bin/pip install -U pip \
     && /venv/bin/pip install --no-cache-dir -r /requirements/production.txt \
@@ -55,7 +64,6 @@ RUN set -ex \
     zlib1g \
     tini \
     nodejs \
-    npm \
     netcat \
     git \
     " \
