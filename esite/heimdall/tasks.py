@@ -59,7 +59,7 @@ def generate_bridge_drop_task(self, async_gen_id, license_key=None):
             "GITHUB_HEIMDALL_ACCESS_TOKEN not found in enviroment"
         )
 
-    HTTPS_REMOTE_URL = f"https://{access_token}@github.com/snek-shipyard/heimdall"
+    HTTPS_REMOTE_URL = f"https://{access_token}@github.com/schettnet/heimdall"
     GENERATOR_NAME = "heimdall_generator"
     BRIDGE_DROP_NAME = "bridge-drop-1.0.0.tgz"
 
