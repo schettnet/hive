@@ -52,19 +52,18 @@ class CallbackTask(Task):
 def generate_bridge_drop_task(self, async_gen_id, license_key=None):
     logger.info("Generated bridge drop with heimdall")
 
-    access_token = getenv("GITHUB_HEIMDALL_ACCESS_TOKEN")
+    REMOTE_URL = getenv("GITHUB_HEIMDALL_REMOTE_URL")
 
-    if not access_token:
+    if not REMOTE_URL:
         raise UnconfiguredEnvironment(
-            "GITHUB_HEIMDALL_ACCESS_TOKEN not found in enviroment"
+            "GITHUB_HEIMDALL_REMOTE_URL not found in enviroment"
         )
 
-    HTTPS_REMOTE_URL = f"https://{access_token}@github.com/schettnet/heimdall"
     GENERATOR_NAME = "heimdall_generator"
     BRIDGE_DROP_NAME = "bridge-drop-1.0.0.tgz"
 
     if not path.exists(GENERATOR_NAME):
-        repo = git.Repo.clone_from(HTTPS_REMOTE_URL, GENERATOR_NAME)
+        repo = git.Repo.clone_from(REMOTE_URL, GENERATOR_NAME)
         print(repo)
     else:
         repo = git.Repo(GENERATOR_NAME)
