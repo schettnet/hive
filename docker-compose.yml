@@ -21,7 +21,7 @@ services:
 
     #> Django
     app:
-        image: dropper-app
+        image: hive-app
         build:
             context: .
             dockerfile: Docker/Dockerfile
@@ -52,7 +52,7 @@ services:
             restart_policy:
                 condition: on-failure
         hostname: celery_worker
-        image: dropper-app
+        image: hive-app
         restart: on-failure
         working_dir: /code
 
@@ -69,7 +69,7 @@ services:
             - "db"
             - "redis"
         hostname: celery_beat
-        image: dropper-app
+        image: hive-app
         restart: on-failure
         working_dir: /code
 
