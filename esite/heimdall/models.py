@@ -90,7 +90,7 @@ class License(models.Model):
                 license.remaining_uses -= 1
                 license.save()
 
-            return license.remaining_uses
+            return license
 
         return False
 

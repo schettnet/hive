@@ -19,10 +19,10 @@ class HeimdallGeneration(graphene.Mutation):
 
     @login_required
     def mutate(self, info, introspection_data, license_key):
-        remaining_uses = License.use(license_key=license_key)
+        license = License.use(license_key=license_key)
 
-        if not remaining_uses:
-            """If remaining_uses is False then the license is invalid."""
+        if not license:
+            """If license is False then the license is invalid."""
             raise GraphQLError(
                 "This license is invalid. This could be due to expiration or has already been used."
             )
@@ -39,7 +39,9 @@ class HeimdallGeneration(graphene.Mutation):
             license_key=license_key, state=task_state, task_id=task_id, url=None
         )
 
-        return HeimdallGeneration(task_id=task_id, remaining_uses=remaining_uses)
+        return HeimdallGeneration(
+            task_id=task_id, remaining_uses=license.remaining_uses
+        )
 
 
 class Mutation(graphene.ObjectType):
