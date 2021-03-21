@@ -11,6 +11,7 @@ from .types import GenerationTypes
 
 class HeimdallGeneration(graphene.Mutation):
     task_id = graphene.String()
+    remaining_uses = graphene.Int()
 
     class Arguments:
         introspection_data = graphene.JSONString(required=True)
@@ -18,7 +19,10 @@ class HeimdallGeneration(graphene.Mutation):
 
     @login_required
     def mutate(self, info, introspection_data, license_key):
-        if not License.validate(license_key=license_key):
+        remaining_uses = License.use(license_key=license_key)
+
+        if not remaining_uses:
+            """If remaining_uses is False then the license is invalid."""
             raise GraphQLError(
                 "This license is invalid. This could be due to expiration or has already been used."
             )
@@ -31,16 +35,11 @@ class HeimdallGeneration(graphene.Mutation):
         task_id = task.id
         task_state = task.state
 
-        # Deactivate licence
-        license = License.objects.get(key=license_key)
-        # license.is_active = False
-        license.save()
-
         OnNewHeimdallGeneration.new_heimdall_generation(
             license_key=license_key, state=task_state, task_id=task_id, url=None
         )
 
-        return HeimdallGeneration(task_id=task_id)
+        return HeimdallGeneration(task_id=task_id, remaining_uses=remaining_uses)
 
 
 class Mutation(graphene.ObjectType):

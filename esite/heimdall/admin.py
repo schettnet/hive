@@ -12,7 +12,7 @@ class LicenseAdmin(ModelAdmin):
     exclude_from_explorer = False
 
     # Listed in the user overview
-    list_display = ("key", "owner", "is_active")
+    list_display = ("key", "owner", "remaining_uses", "is_active")
     search_fields = ("owner", "is_active")
 
 
