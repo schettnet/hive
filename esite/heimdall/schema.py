@@ -28,7 +28,7 @@ class HeimdallGeneration(graphene.Mutation):
             )
 
         async_gen = AsyncHeimdallGeneration.objects.create(
-            introspection=introspection_data
+            license=license, introspection=introspection_data
         )
 
         task = generate_bridge_drop_task.delay(async_gen.id, license_key=license_key)

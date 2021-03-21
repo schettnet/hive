@@ -6,10 +6,11 @@ from django.core.files.base import ContentFile
 from django.db import models
 from django.utils import timezone
 from modelcluster.fields import ParentalKey
-from wagtail.admin.edit_handlers import FieldPanel
+from wagtail.admin.edit_handlers import FieldPanel, InlinePanel, MultiFieldPanel
 
 from esite.user.models import SNEKCustomer
 from esite.utils.edit_handlers import ReadOnlyPanel
+from esite.utils.models import TimeStampMixin
 
 
 def n_days_from_today(days):
@@ -95,12 +96,27 @@ class License(models.Model):
         return False
 
 
-class AsyncHeimdallGeneration(models.Model):
+class AsyncHeimdallGeneration(TimeStampMixin):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     introspection = models.JSONField()
     bridge_drop_binary_name = models.CharField(max_length=255, null=True)
     bridge_drop_binary = models.BinaryField(null=True)
     bridge_drop_binary_saved = models.BooleanField(default=False)
+    license = models.ForeignKey(License, null=True, on_delete=models.SET_NULL)
+
+    panels = [
+        ReadOnlyPanel("id", "Generation id"),
+        MultiFieldPanel(
+            [
+                FieldPanel("introspection"),
+                FieldPanel("bridge_drop_binary_name"),
+                FieldPanel("bridge_drop_binary"),
+                FieldPanel("bridge_drop_binary_saved"),
+            ],
+            heading="Generation data",
+        ),
+        InlinePanel("license"),
+    ]
 
     def save_bridge_drop(self):
         if not self.bridge_drop_binary_saved:
