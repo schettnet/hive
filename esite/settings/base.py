@@ -150,7 +150,7 @@ DATABASES = {
 
 # > Graphene Configuration
 GRAPHENE = {
-    "SCHEMA": "bifrost.schema.schema",
+    "SCHEMA": "bifrost.api.schema.schema",
     "MIDDLEWARE": ["graphql_jwt.middleware.JSONWebTokenMiddleware"],
 }
 GRAPHQL_JWT = {

@@ -1,4 +1,4 @@
-from bifrost.models import GraphQLPage, GraphQLString
+from bifrost.api.models import GraphQLPage, GraphQLString
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils.decorators import method_decorator
