@@ -333,7 +333,7 @@ CELERY_BROKER_TRANSPORT_OPTIONS = {
     "interval_max": 3,
 }
 
-#> Bifrost settings
+# > Bifrost settings
 BIFROST_FILES = True
 # Private file storage
 PRIVATE_STORAGE_ROOT = "private_media/"

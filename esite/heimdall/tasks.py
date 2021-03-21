@@ -7,6 +7,7 @@ from celery import Task
 from celery.utils.log import get_task_logger
 
 from esite.celery_app import app as celery_app
+
 from .models import AsyncHeimdallGeneration
 
 logger = get_task_logger(__name__)
